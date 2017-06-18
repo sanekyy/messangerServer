@@ -1,0 +1,15 @@
+package ru.spbstu.telematics.messengerServer.network;
+
+import ru.spbstu.telematics.messengerServer.exceptiopns.ProtocolException;
+import ru.spbstu.telematics.messengerServer.messages.Message;
+
+/**
+ *
+ */
+public interface IProtocol {
+
+    Message decode(byte[] bytes) throws ProtocolException;
+
+    byte[] encode(Message msg) throws ProtocolException;
+
+}
