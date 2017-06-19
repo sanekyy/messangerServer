@@ -26,7 +26,6 @@ public class Info implements ICommand {
 
         InfoMessage infoMessage = (InfoMessage) message;
 
-
         User user = userStore.getUserById(infoMessage.getRequiredId());
 
         if(user == null){
