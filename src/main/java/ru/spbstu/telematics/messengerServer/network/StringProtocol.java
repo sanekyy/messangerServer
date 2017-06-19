@@ -2,11 +2,8 @@ package ru.spbstu.telematics.messengerServer.network;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import ru.spbstu.telematics.messengerServer.data.storage.models.messages.*;
 import ru.spbstu.telematics.messengerServer.exceptiopns.ProtocolException;
-import ru.spbstu.telematics.messengerServer.messages.LoginMessage;
-import ru.spbstu.telematics.messengerServer.messages.Message;
-import ru.spbstu.telematics.messengerServer.messages.TextMessage;
-import ru.spbstu.telematics.messengerServer.messages.Type;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,15 +30,18 @@ public class StringProtocol implements IProtocol {
 
         int startPos = matcher.start();
 
-        Type type = Type.valueOf(rawData.substring(0,startPos));
+        Message.Type type = Message.Type.valueOf(rawData.substring(0,startPos));
         rawData = rawData.substring(startPos+1);
 
         switch (type) {
+            case MSG_REGISTRATION:
+                return new Gson().fromJson(rawData, new TypeToken<RegistrationMessage>(){}.getType());
+            case MSG_LOGIN:
+                return new Gson().fromJson(rawData, new TypeToken<LoginMessage>() {}.getType());
             case MSG_TEXT:
                 return new Gson().fromJson(rawData, new TypeToken<TextMessage>(){}.getType());
-            case MSG_LOGIN:
-                    return new Gson().fromJson(rawData, new TypeToken<LoginMessage>() {}.getType());
             case MSG_INFO:
+                return new Gson().fromJson(rawData, new TypeToken<InfoMessage>(){}.getType());
             default:
                 throw new ProtocolException("Invalid type: " + type);
         }
@@ -50,16 +50,13 @@ public class StringProtocol implements IProtocol {
     @Override
     public byte[] encode(Message message) throws ProtocolException {
         StringBuilder builder = new StringBuilder();
-        Type type = message.getType();
+        Message.Type type = message.getType();
         builder.append(type).append(DELIMITER);
         switch (type) {
             case MSG_TEXT:
-                builder.append(new Gson().toJson(message));
-                break;
             case MSG_LOGIN:
-                builder.append(new Gson().toJson(message));
-                break;
             case MSG_STATUS:
+            case MSG_INFO_RESULT:
                 builder.append(new Gson().toJson(message));
                 break;
             default:

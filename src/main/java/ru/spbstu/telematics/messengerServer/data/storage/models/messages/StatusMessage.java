@@ -1,7 +1,7 @@
-package ru.spbstu.telematics.messengerServer.messages;
+package ru.spbstu.telematics.messengerServer.data.storage.models.messages;
 
 import lombok.Getter;
-import ru.spbstu.telematics.messengerServer.store.User;
+import ru.spbstu.telematics.messengerServer.data.storage.models.User;
 
 /**
  * Created by ihb on 17.06.17.
@@ -10,9 +10,13 @@ import ru.spbstu.telematics.messengerServer.store.User;
 @Getter
 public class StatusMessage extends Message {
 
-    public static final int STATUS_OK = -1;
+    public static final int LOGIN_SUCCESS = -1;
+
+    public static final int REGISTRATION_SUCCESS = -2;
 
     public static final int LOGIN_ERROR = 1;
+
+    public static final int REGISTRATION_ERROR = 2;
 
     private final int statusCode;
 
@@ -29,5 +33,6 @@ public class StatusMessage extends Message {
         setType(Type.MSG_STATUS);
 
         this.statusCode = statusCode;
+        this.user = user;
     }
 }

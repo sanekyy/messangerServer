@@ -1,7 +1,7 @@
 package ru.spbstu.telematics.messengerServer;
 
 import ru.spbstu.telematics.messengerServer.exceptiopns.ProtocolException;
-import ru.spbstu.telematics.messengerServer.messages.Message;
+import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.network.IProtocol;
 import ru.spbstu.telematics.messengerServer.network.Session;
 import ru.spbstu.telematics.messengerServer.network.StringProtocol;
@@ -9,10 +9,7 @@ import ru.spbstu.telematics.messengerServer.network.StringProtocol;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -70,7 +67,20 @@ public class Main {
 
                     sessionMap.put(client, new Session(client.socket()));
                 } else if (key.isReadable()) {
-                    executor.execute(() -> handle((SocketChannel)  key.channel()));
+
+                    ByteBuffer buffer = ByteBuffer.allocate(AppConfig.BUFFER_SIZE);
+
+                    SocketChannel client = (SocketChannel) key.channel();
+
+                    if (client.read(buffer) == -1) {
+                        log("Connection closed " + client.getRemoteAddress());
+                        sessionMap.remove(client);
+                        client.finishConnect();
+                        client.close();
+                    } else {
+                        executor.execute(() -> handle(client, buffer));
+                    }
+
                 }
 
                 it.remove();
@@ -78,22 +88,9 @@ public class Main {
         }
     }
 
-    private static void handle(SocketChannel client) {
-        ByteBuffer buffer = ByteBuffer.allocate(AppConfig.BUFFER_SIZE);
-
-        try {
-            if(client.read(buffer) == -1){
-                log("Connection closed " + client.getRemoteAddress());
-                sessionMap.remove(client);
-                client.finishConnect();
-                client.close();;
-                return;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    private static void handle(SocketChannel client, ByteBuffer buffer) {
         Message message = null;
+
         try {
             message = protocol.decode(buffer.array());
         } catch (ProtocolException e) {
@@ -110,7 +107,7 @@ public class Main {
         System.out.println(str);
     }
 
-    private static Session getSession(SocketChannel socketChannel){
+    private static Session getSession(SocketChannel socketChannel) {
         return sessionMap.computeIfAbsent(socketChannel, c -> new Session(c.socket()));
     }
 }

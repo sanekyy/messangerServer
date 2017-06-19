@@ -1,4 +1,4 @@
-package ru.spbstu.telematics.messengerServer.messages;
+package ru.spbstu.telematics.messengerServer.data.storage.models.messages;
 
 import lombok.Getter;
 
@@ -9,13 +9,15 @@ import lombok.Getter;
 @Getter
 public class LoginMessage extends Message {
 
-    public String login;
-    public String password;
+    String login;
+    String password;
 
     public LoginMessage(String login, String password) {
         setType(Type.MSG_LOGIN);
 
         this.login = login;
         this.password = password;
+
+
     }
 }

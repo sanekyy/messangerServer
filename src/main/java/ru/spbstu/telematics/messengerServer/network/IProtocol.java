@@ -1,7 +1,7 @@
 package ru.spbstu.telematics.messengerServer.network;
 
 import ru.spbstu.telematics.messengerServer.exceptiopns.ProtocolException;
-import ru.spbstu.telematics.messengerServer.messages.Message;
+import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 
 /**
  *

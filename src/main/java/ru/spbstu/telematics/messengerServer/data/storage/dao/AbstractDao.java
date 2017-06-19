@@ -1,27 +1,32 @@
-package ru.spbstu.telematics.messengerServer.store.DAO;
+package ru.spbstu.telematics.messengerServer.data.storage.dao;
+
+import ru.spbstu.telematics.messengerServer.data.storage.models.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Created by ihb on 18.06.17.
  */
-public abstract class AbstractController<E, K> {
+public abstract class AbstractDao<E, K> {
     private Connection connection;
-    //private ConnectionPool connectionPool;
 
-    public AbstractController() {
-        //connectionPool = ConnectionPool.getConnectionPool();
-        //connection = connectionPool.getConnection();
+    AbstractDao() {
+        try {
+            connection = ConnectionPool.retrieve();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    public abstract List<E> getAll();
+    public abstract List<E> loadAll();
     public abstract E update(E entity);
-    public abstract E getEntityById(K id);
-    public abstract boolean delete(K id);
-    public abstract boolean create(E entity);
+    public abstract E load(K id);
+    public abstract boolean delete(E entity);
+    public abstract E insert(E entity);
 
     // Возвращения экземпляра Connection в пул соединений
     public void returnConnectionInPool() {
@@ -29,7 +34,7 @@ public abstract class AbstractController<E, K> {
     }
 
     // Получение экземпляра PrepareStatement
-    public PreparedStatement getPrepareStatement(String sql) {
+    PreparedStatement getPrepareStatement(String sql) {
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql);
@@ -41,7 +46,7 @@ public abstract class AbstractController<E, K> {
     }
 
     // Закрытие PrepareStatement
-    public void closePrepareStatement(PreparedStatement ps) {
+    void closePrepareStatement(PreparedStatement ps) {
         if (ps != null) {
             try {
                 ps.close();

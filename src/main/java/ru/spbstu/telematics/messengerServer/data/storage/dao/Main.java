@@ -1,4 +1,4 @@
-package ru.spbstu.telematics.messengerServer.store.DAO;
+package ru.spbstu.telematics.messengerServer.data.storage.dao;
 
 import java.sql.*;
 
@@ -9,11 +9,11 @@ public class Main {
 
     // JDBC driver name and database URL
     static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost/messenger";
+    static final String DB_URL = "jdbc:mysql://localhost/messenger?serverTimezone=UTC";
 
-    //  Database credentials
-    static final String USER = "username";
-    static final String PASS = "password";
+    //  Database credentialsataba
+    static final String USER = "root";
+    static final String PASS = "aQmissyy";
 
     public static void main(String[] args) {
         Connection conn = null;

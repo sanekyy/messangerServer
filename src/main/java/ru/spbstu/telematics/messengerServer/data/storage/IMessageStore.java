@@ -1,10 +1,10 @@
-package ru.spbstu.telematics.messengerServer.store;
+package ru.spbstu.telematics.messengerServer.data.storage;
 
-import ru.spbstu.telematics.messengerServer.messages.Message;
+import ru.spbstu.telematics.messengerServer.data.storage.models.messages.TextMessage;
 
 import java.util.List;
 
-public interface MessageStore {
+public interface IMessageStore {
     /**
      * получаем список ид пользователей заданного чата
      */
@@ -23,12 +23,12 @@ public interface MessageStore {
     /**
      * Получить информацию о сообщении
      */
-    Message getMessageById(Long messageId);
+    TextMessage getMessageById(Long messageId);
 
     /**
      * Добавить сообщение в чат
      */
-    void addMessage(Long chatId, Message message);
+    void addMessage(TextMessage message);
 
     /**
      * Добавить пользователя к чату
