@@ -1,4 +1,4 @@
-package ru.spbstu.telematics.messengerServer.exceptiopns;
+package ru.spbstu.telematics.messengerServer.exceptions;
 
 /**
  * Исключение, которое бросается, когда происходят ошибки кодирования/декодирования

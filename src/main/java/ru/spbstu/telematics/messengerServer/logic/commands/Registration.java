@@ -6,7 +6,7 @@ import ru.spbstu.telematics.messengerServer.data.storage.models.User;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.RegistrationMessage;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.StatusMessage;
-import ru.spbstu.telematics.messengerServer.exceptiopns.CommandException;
+import ru.spbstu.telematics.messengerServer.exceptions.CommandException;
 import ru.spbstu.telematics.messengerServer.network.Session;
 
 import java.math.BigInteger;

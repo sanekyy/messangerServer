@@ -3,6 +3,8 @@ package ru.spbstu.telematics.messengerServer.data.storage;
 
 import ru.spbstu.telematics.messengerServer.data.storage.models.User;
 
+import java.util.List;
+
 public interface IUserStore {
     /**
      * Добавить пользователя в хранилище
@@ -24,4 +26,10 @@ public interface IUserStore {
      * return null if user not found
      */
     User getUserById(Long id);
+
+    /**
+     * Получить пользователей по id, например запрос информации/профиля
+     * return null if user not found
+     */
+    List<User> getUsersById(List<Long> participants);
 }

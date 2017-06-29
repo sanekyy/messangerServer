@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by ihb on 18.06.17.
@@ -99,6 +100,10 @@ public class UserDao extends AbstractDao<User, Long> {
         return null;
     }
 
+    public List<User> load(List<Long> ids){
+        return ids.stream().map(this::load).collect(Collectors.toList());
+    }
+
     @Override
     public boolean delete(User user) {
 
@@ -124,7 +129,15 @@ public class UserDao extends AbstractDao<User, Long> {
             ps.setString(2, user.getPassword());
             ps.setString(3, user.getToken());
             ps.execute();
-            return loadByLogin(user.getLogin());
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    user.setId(generatedKeys.getLong(1));
+                }
+                else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                }
+            }
+            return user;
         } catch (SQLException e){
             e.printStackTrace();
         } finally {

@@ -1,11 +1,12 @@
 package ru.spbstu.telematics.messengerServer.data.storage.dao;
 
-import ru.spbstu.telematics.messengerServer.data.storage.models.User;
+
+import ru.spbstu.telematics.messengerServer.data.storage.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public abstract class AbstractDao<E, K> {
     PreparedStatement getPrepareStatement(String sql) {
         PreparedStatement ps = null;
         try {
-            ps = connection.prepareStatement(sql);
+            ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package ru.spbstu.telematics.messengerServer.data.storage.dao;
+package ru.spbstu.telematics.messengerServer.data.storage;
 
 import ru.spbstu.telematics.messengerServer.AppConfig;
 
@@ -10,7 +10,7 @@ import java.util.Vector;
 /**
  * Created by ihb on 18.06.17.
  */
-class ConnectionPool {
+public class ConnectionPool {
 
     private static Vector<Connection> availableConnections = new Vector<>();
     private static Vector<Connection> usedConnections = new Vector<>();

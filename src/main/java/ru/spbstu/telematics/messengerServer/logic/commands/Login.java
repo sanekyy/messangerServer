@@ -2,7 +2,7 @@ package ru.spbstu.telematics.messengerServer.logic.commands;
 
 
 import ru.spbstu.telematics.messengerServer.data.DataManager;
-import ru.spbstu.telematics.messengerServer.exceptiopns.CommandException;
+import ru.spbstu.telematics.messengerServer.exceptions.CommandException;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.LoginMessage;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.StatusMessage;

@@ -21,7 +21,6 @@ public class InfoResultMessage extends Message {
     User user;
 
     public InfoResultMessage(int statusCode){
-        // TODO: 19.06.17 move Type to static
         setType(Type.MSG_INFO_RESULT);
 
         this.statusCode = statusCode;

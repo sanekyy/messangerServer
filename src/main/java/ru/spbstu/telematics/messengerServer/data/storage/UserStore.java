@@ -3,6 +3,8 @@ package ru.spbstu.telematics.messengerServer.data.storage;
 import ru.spbstu.telematics.messengerServer.data.storage.dao.UserDao;
 import ru.spbstu.telematics.messengerServer.data.storage.models.User;
 
+import java.util.List;
+
 /**
  * Created by ihb on 14.06.17.
  */
@@ -34,5 +36,10 @@ public class UserStore implements IUserStore {
     @Override
     public User getUserById(Long id) {
         return userDao.load(id);
+    }
+
+    @Override
+    public List<User> getUsersById(List<Long> participants) {
+        return userDao.load(participants);
     }
 }

@@ -1,4 +1,4 @@
-package ru.spbstu.telematics.messengerServer.exceptiopns;
+package ru.spbstu.telematics.messengerServer.exceptions;
 
 /**
  * Created by ihb on 13.06.17.

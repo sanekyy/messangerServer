@@ -3,7 +3,7 @@ package ru.spbstu.telematics.messengerServer.network;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.*;
-import ru.spbstu.telematics.messengerServer.exceptiopns.ProtocolException;
+import ru.spbstu.telematics.messengerServer.exceptions.ProtocolException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class StringProtocol implements IProtocol {
 
-    public static final String DELIMITER = ";";
+    private static final String DELIMITER = ";";
 
     @Override
     public Message decode(byte[] bytes) throws ProtocolException {
@@ -42,6 +42,12 @@ public class StringProtocol implements IProtocol {
                 return new Gson().fromJson(rawData, new TypeToken<TextMessage>(){}.getType());
             case MSG_INFO:
                 return new Gson().fromJson(rawData, new TypeToken<InfoMessage>(){}.getType());
+            case MSG_CHAT_LIST:
+                return new Gson().fromJson(rawData, new TypeToken<ChatListMessage>(){}.getType());
+            case MSG_CHAT_CREATE:
+                return new Gson().fromJson(rawData, new TypeToken<ChatCreateMessage>(){}.getType());
+            case MSG_CHAT_HIST:
+                return new Gson().fromJson(rawData, new TypeToken<ChatHistMessage>(){}.getType());
             default:
                 throw new ProtocolException("Invalid type: " + type);
         }
@@ -57,6 +63,8 @@ public class StringProtocol implements IProtocol {
             case MSG_LOGIN:
             case MSG_STATUS:
             case MSG_INFO_RESULT:
+            case MSG_CHAT_LIST_RESULT:
+            case MSG_CHAT_HIST_RESULT:
                 builder.append(new Gson().toJson(message));
                 break;
             default:

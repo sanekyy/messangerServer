@@ -1,11 +1,10 @@
 package ru.spbstu.telematics.messengerServer.data.storage;
 
-import ru.spbstu.telematics.messengerServer.data.DataManager;
+import ru.spbstu.telematics.messengerServer.data.storage.dao.ChatDao;
 import ru.spbstu.telematics.messengerServer.data.storage.dao.MessageDao;
-import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
+import ru.spbstu.telematics.messengerServer.data.storage.models.Chat;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.TextMessage;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 
 /**
@@ -14,16 +13,27 @@ import java.util.List;
 public class MessageStore implements IMessageStore {
 
     private MessageDao messageDao = new MessageDao();
+    private ChatDao chatDao = new ChatDao();
 
 
     @Override
     public List<Long> getChatsByUserId(Long userId) {
-        return null;
+        return chatDao.loadByUserId(userId);
+    }
+
+    @Override
+    public Chat getChatById(Long chatId) {
+        return chatDao.load(chatId);
+    }
+
+    @Override
+    public List<Chat> getChatsById(List<Long> chatsId) {
+        return chatDao.load(chatsId);
     }
 
     @Override
     public List<Long> getMessagesFromChat(Long chatId) {
-        return null;
+        return messageDao.loadByChatId(chatId);
     }
 
     @Override
@@ -33,12 +43,19 @@ public class MessageStore implements IMessageStore {
 
 
     @Override
-    public void addMessage(TextMessage textMessage) {
-        messageDao.insert(textMessage);
+    public TextMessage addMessage(TextMessage textMessage) {
+        return messageDao.insert(textMessage);
     }
 
     @Override
     public void addUserToChat(Long userId, Long chatId) {
-
+        chatDao.insertUserInChat(userId, chatId);
     }
+
+    @Override
+    public Chat createChat(Chat chat) {
+        return chatDao.insert(chat);
+    }
+
+
 }

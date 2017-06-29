@@ -17,7 +17,5 @@ public class LoginMessage extends Message {
 
         this.login = login;
         this.password = password;
-
-
     }
 }

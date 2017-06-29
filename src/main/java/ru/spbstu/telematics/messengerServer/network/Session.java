@@ -1,10 +1,9 @@
 package ru.spbstu.telematics.messengerServer.network;
 
 
+import lombok.Getter;
 import lombok.Setter;
-import ru.spbstu.telematics.messengerServer.data.DataManager;
-import ru.spbstu.telematics.messengerServer.data.storage.UserStore;
-import ru.spbstu.telematics.messengerServer.exceptiopns.ProtocolException;
+import ru.spbstu.telematics.messengerServer.exceptions.ProtocolException;
 import ru.spbstu.telematics.messengerServer.logic.CommandHandler;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.data.storage.models.User;
@@ -18,6 +17,7 @@ import java.nio.ByteBuffer;
  * Бизнес логика представлена объектом юзера - владельца сессии.
  * Сетевая часть привязывает нас к определнному соединению по сети (от клиента)
  */
+@Getter
 @Setter
 public class Session {
 
@@ -46,6 +46,7 @@ public class Session {
         // TODO: 17.06.17 fix me
         ByteBuffer buffer = null;
         try {
+            // TODO: 20.06.17 fix new StringProtocol..
             buffer = ByteBuffer.wrap(new StringProtocol().encode(message));
         } catch (ProtocolException e) {
             e.printStackTrace();
@@ -68,6 +69,18 @@ public class Session {
                 break;
             case MSG_INFO:
                 CommandHandler.info(this, message);
+                break;
+            case MSG_CHAT_LIST:
+                CommandHandler.chatList(this, message);
+                break;
+            case MSG_CHAT_CREATE:
+                CommandHandler.chatCreate(this, message);
+                break;
+            case MSG_CHAT_HIST:
+                CommandHandler.chatHist(this, message);
+                break;
+            case MSG_TEXT:
+                CommandHandler.text(this, message);
                 break;
         }
     }

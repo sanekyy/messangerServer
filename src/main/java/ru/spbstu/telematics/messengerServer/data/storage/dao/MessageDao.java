@@ -18,18 +18,19 @@ public class MessageDao extends AbstractDao<TextMessage, Long> {
     private static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS\n" +
             "    `message` (\n" +
             "        `id` INT NOT NULL AUTO_INCREMENT,\n" +
-            "        `senderId` INT NOT NULL,\n" +
-            "        `chatId` INT NOT NULL,\n" +
+            "        `sender_id` INT NOT NULL,\n" +
+            "        `chat_id` INT NOT NULL,\n" +
             "        `text` VARCHAR(300) NOT NULL,\n" +
-            "        `timestamp` INT NOT NULL,\n" +
+            "        `timestamp` BIGINT NOT NULL,\n" +
             "        PRIMARY KEY(`id`)\n" +
             "    )\n";
 
     private static final String SELECT_ALL = "SELECT * FROM message";
-    private static final String UPDATE_ONE = "UPDATE message SET senderId = ?, chatId = ?, text = ?, timestamp = ? WHERE id = ?";
+    private static final String UPDATE_ONE = "UPDATE message SET sender_id = ?, chat_id = ?, text = ?, timestamp = ? WHERE id = ?";
     private static final String LOAD_BY_ID = "SELECT * FROM message WHERE id = ?";
+    private static final String LOAD_BY_CHAT_ID = "SELECT * FROM message WHERE chat_id = ?";
     private static final String DELETE_ONE = "DELETE FROM message WHERE id = ?";
-    private static final String INSERT_ONE = "INSERT INTO message (senderId, chatId, text, timestamp) VALUES (?, ?, ?, ?)";
+    private static final String INSERT_ONE = "INSERT INTO message (sender_id, chat_id, text, timestamp) VALUES (?, ?, ?, ?)";
 
 
     public MessageDao(){
@@ -48,12 +49,12 @@ public class MessageDao extends AbstractDao<TextMessage, Long> {
 
     @Override
     public List<TextMessage> loadAll() {
-        List<TextMessage> testMessages = new ArrayList<>();
+        List<TextMessage> messages = new ArrayList<>();
         PreparedStatement ps = getPrepareStatement(SELECT_ALL);
         try {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                testMessages.add(parseOne(rs));
+                messages.add(parseOne(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -61,7 +62,7 @@ public class MessageDao extends AbstractDao<TextMessage, Long> {
             closePrepareStatement(ps);
         }
 
-        return testMessages;
+        return messages;
     }
 
     @Override
@@ -125,13 +126,42 @@ public class MessageDao extends AbstractDao<TextMessage, Long> {
             ps.setLong(2, textMessage.getChatId());
             ps.setString(3, textMessage.getText());
             ps.setLong(4, textMessage.getTimestamp());
-            return parseOne(ps.executeQuery());
+            ps.execute();
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    textMessage.setId(generatedKeys.getLong(1));
+                }
+                else {
+                    textMessage.setId(-1L);
+                    throw new SQLException("Creating chat failed, no ID obtained.");
+                }
+            }
         } catch (SQLException e){
             e.printStackTrace();
         } finally {
             closePrepareStatement(ps);
         }
-        return null;
+
+        return textMessage;
+    }
+
+    public List<Long> loadByChatId(Long chatId) {
+        List<Long> messages = new ArrayList<>();
+
+        PreparedStatement ps = getPrepareStatement(LOAD_BY_CHAT_ID);
+        try {
+            ps.setLong(1, chatId);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                messages.add(rs.getLong(1));
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        } finally {
+            closePrepareStatement(ps);
+        }
+
+        return messages;
     }
 
     private TextMessage parseOne(ResultSet rs) throws SQLException {
