@@ -13,9 +13,11 @@ public class ChatHistResultMessage extends Message {
     public static final int STATUS_SUCCESS = -1;
 
     public static final int PERMISSION_DENIED_ERROR = 1;
+    public static final int CHAT_NOT_EXIST = 2;
 
 
     private final int statusCode;
+
 
     List<TextMessage> messages;
 

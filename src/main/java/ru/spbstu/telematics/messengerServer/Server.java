@@ -1,10 +1,10 @@
 package ru.spbstu.telematics.messengerServer;
 
+import ru.spbstu.telematics.messengerServer.data.DataManager;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.exceptions.ProtocolException;
 import ru.spbstu.telematics.messengerServer.network.IProtocol;
 import ru.spbstu.telematics.messengerServer.network.Session;
-import ru.spbstu.telematics.messengerServer.network.StringProtocol;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,12 +20,14 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static ru.spbstu.telematics.messengerServer.AppConfig.DEBUG;
+
 /**
  * Created by ihb on 23.06.17.
  */
 public class Server {
 
-    IProtocol protocol = new StringProtocol();
+    IProtocol protocol = DataManager.getInstance().getProtocol();
 
     static Map<SocketChannel, Session> sessionMap = new HashMap<>();
 
@@ -37,10 +39,8 @@ public class Server {
         ServerSocketChannel socket = ServerSocketChannel.open();
         InetSocketAddress address = new InetSocketAddress(AppConfig.PORT);
 
-
         socket.bind(address);
 
-        // TODO: 13.06.17 what is it?
         socket.configureBlocking(false);
 
         int ops = socket.validOps();
@@ -49,7 +49,7 @@ public class Server {
         log("server running");
         while (true) {
 
-            log("waiting message..");
+            log("\nwaiting message..");
             selector.select();
 
             Set<SelectionKey> keys = selector.selectedKeys();
@@ -61,7 +61,6 @@ public class Server {
                 if (key.isAcceptable()) {
                     SocketChannel client = socket.accept();
 
-                    // TODO: 13.06.17 what is it?
                     client.configureBlocking(false);
 
                     client.register(selector, SelectionKey.OP_READ);
@@ -76,13 +75,11 @@ public class Server {
 
                     if (client.read(buffer) == -1) {
                         log("Connection closed " + client.getRemoteAddress());
+                        sessionMap.get(client).close();
                         sessionMap.remove(client);
-                        client.finishConnect();
-                        client.close();
                     } else {
                         executor.execute(() -> handle(client, buffer));
                     }
-
                 }
 
                 it.remove();
@@ -91,12 +88,14 @@ public class Server {
     }
 
     private void handle(SocketChannel client, ByteBuffer buffer) {
-        Message message = null;
+        Message message;
 
         try {
             message = protocol.decode(buffer.array());
         } catch (ProtocolException e) {
-            e.printStackTrace();
+            if (DEBUG) {
+                System.out.println(e.getMessage());
+            }
             return;
         }
 

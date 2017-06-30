@@ -6,14 +6,12 @@ import ru.spbstu.telematics.messengerServer.data.storage.MessageStore;
 import ru.spbstu.telematics.messengerServer.data.storage.UserStore;
 import ru.spbstu.telematics.messengerServer.data.storage.models.Chat;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.ChatCreateMessage;
+import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.data.storage.models.messages.StatusMessage;
 import ru.spbstu.telematics.messengerServer.exceptions.CommandException;
-import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.network.Session;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Created by ihb on 14.06.17.
@@ -40,8 +38,7 @@ public class ChatCreate implements ICommand {
                     .findFirst();
 
             if(chatOptional.isPresent()) {
-                // TODO: 29.06.17 return id of existing chat
-                message = new StatusMessage(StatusMessage.CHAT_CREATE_ERROR);
+                message = new StatusMessage(StatusMessage.CHAT_CREATE_ERROR, chatOptional.get().getId());
             } else {
                 Chat chat = new Chat();
 

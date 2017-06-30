@@ -160,14 +160,16 @@ public class ChatDao extends AbstractDao<Chat, Long> {
     @Override
     public Chat load(Long id) {
 
-        Chat chat = new Chat();
+        Chat chat;
 
         PreparedStatement ps = getPrepareStatement(LOAD_CHAT_BY_ID);
         try {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
+            if (rs.next()) {
                 chat = parseChat(rs);
+            } else {
+                return null;
             }
         } catch (SQLException e) {
             e.printStackTrace();

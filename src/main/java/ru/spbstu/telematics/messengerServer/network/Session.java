@@ -3,10 +3,12 @@ package ru.spbstu.telematics.messengerServer.network;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.spbstu.telematics.messengerServer.AppConfig;
+import ru.spbstu.telematics.messengerServer.data.DataManager;
+import ru.spbstu.telematics.messengerServer.data.storage.models.User;
+import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
 import ru.spbstu.telematics.messengerServer.exceptions.ProtocolException;
 import ru.spbstu.telematics.messengerServer.logic.CommandHandler;
-import ru.spbstu.telematics.messengerServer.data.storage.models.messages.Message;
-import ru.spbstu.telematics.messengerServer.data.storage.models.User;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -30,6 +32,8 @@ public class Session {
     // сокет на клиента
     private Socket socket;
 
+    private IProtocol protocol = DataManager.getInstance().getProtocol();
+
     public Session(Socket socket) {
         this.socket = socket;
     }
@@ -43,19 +47,23 @@ public class Session {
             message.setSenderId(user.getId());
         }
 
-        // TODO: 17.06.17 fix me
-        ByteBuffer buffer = null;
+        ByteBuffer buffer;
         try {
-            // TODO: 20.06.17 fix new StringProtocol..
-            buffer = ByteBuffer.wrap(new StringProtocol().encode(message));
+            buffer = ByteBuffer.wrap(protocol.encode(message));
         } catch (ProtocolException e) {
-            e.printStackTrace();
+            if (AppConfig.DEBUG) {
+                e.printStackTrace();
+            }
+            return;
         }
 
         try {
             socket.getChannel().write(buffer);
         } catch (IOException e) {
-            e.printStackTrace();
+            if (AppConfig.DEBUG) {
+                e.printStackTrace();
+            }
+            System.out.println(e.getMessage());
         }
     }
 
@@ -86,6 +94,12 @@ public class Session {
     }
 
     public void close() {
-        // TODO: закрыть in/out каналы и сокет. Освободить другие ресурсы, если необходимо
+        try {
+            socket.close();
+        } catch (IOException e) {
+            if (AppConfig.DEBUG) {
+                e.printStackTrace();
+            }
+        }
     }
 }

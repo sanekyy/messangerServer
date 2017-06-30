@@ -8,7 +8,7 @@ public class AppConfig {
     public static final boolean DEBUG = true;
 
 
-    static final int PORT = 8080;
+    static final int PORT = 80;
     static final String HOST = "localhost";
 
     static final int BUFFER_SIZE = 1024 * 64;

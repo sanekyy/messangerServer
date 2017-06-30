@@ -30,7 +30,12 @@ public class StringProtocol implements IProtocol {
 
         int startPos = matcher.start();
 
-        Message.Type type = Message.Type.valueOf(rawData.substring(0,startPos));
+        Message.Type type;
+        try {
+            type = Message.Type.valueOf(rawData.substring(0, startPos));
+        } catch (IllegalArgumentException e) {
+            throw new ProtocolException("Illegal argument");
+        }
         rawData = rawData.substring(startPos+1);
 
         switch (type) {

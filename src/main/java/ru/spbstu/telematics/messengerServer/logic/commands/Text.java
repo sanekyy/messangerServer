@@ -24,25 +24,31 @@ public class Text implements ICommand {
 
         final TextMessage textMessage = (TextMessage) message;
 
-        Chat chat = messageStore.getChatById(textMessage.getChatId());
-        if(chat == null || !chat.getParticipants().contains(message.getSenderId())){
-            message = new StatusMessage(StatusMessage.TEXT_MESSAGE_ERROR);
+        if (textMessage.getText().length() > 300) {
+            message = new StatusMessage(StatusMessage.MESSAGE_TOO_LONG);
         } else {
-
-            messageStore.addMessage(textMessage);
-
-            if (textMessage.getId() != -1L) {
-                message = new StatusMessage(StatusMessage.TEXT_MESSAGE_SUCCESS);
+            Chat chat = messageStore.getChatById(textMessage.getChatId());
+            if (chat == null) {
+                message = new StatusMessage(StatusMessage.CHAT_NOT_EXIST);
+            } else if (!chat.getParticipants().contains(message.getSenderId())) {
+                message = new StatusMessage(StatusMessage.PERMISSION_DENIED);
             } else {
-                message = new StatusMessage(StatusMessage.TEXT_MESSAGE_ERROR);
+
+                messageStore.addMessage(textMessage);
+
+                if (textMessage.getId() != -1L) {
+                    message = new StatusMessage(StatusMessage.TEXT_MESSAGE_SUCCESS);
+                } else {
+                    message = new StatusMessage(StatusMessage.SERVER_ERROR);
+                }
+
+                List<Long> participants = messageStore.getChatById(textMessage.getChatId()).getParticipants();
+
+                Server.getSessions().forEach((socket, session1) -> {
+                    if (participants.contains(session1.getUser().getId()) && session1 != session)
+                        session1.send(textMessage);
+                });
             }
-
-            List<Long> participants = messageStore.getChatById(textMessage.getChatId()).getParticipants();
-
-            Server.getSessions().forEach((socket, session1) -> {
-                if (participants.contains(session1.getUser().getId()) && session1 != session)
-                    session1.send(textMessage);
-            });
         }
 
         session.send(message);
