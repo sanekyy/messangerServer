@@ -9,9 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by ihb on 20.06.17.
- */
+
 public class ChatDao extends AbstractDao<Chat, Long> {
 
     private static final String CREATE_CHAT_TABLE = "CREATE TABLE IF NOT EXISTS\n" +
