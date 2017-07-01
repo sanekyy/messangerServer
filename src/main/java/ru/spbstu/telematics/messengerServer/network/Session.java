@@ -11,8 +11,10 @@ import ru.spbstu.telematics.messengerServer.exceptions.ProtocolException;
 import ru.spbstu.telematics.messengerServer.logic.CommandHandler;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Сессия связывает бизнес-логику и сетевую часть.
@@ -30,12 +32,14 @@ public class Session {
     private User user;
 
     // сокет на клиента
-    private Socket socket;
+    private SelectionKey key;
 
     private IProtocol protocol = DataManager.getInstance().getProtocol();
 
-    public Session(Socket socket) {
-        this.socket = socket;
+    Queue<ByteBuffer> bufferToSendQueue = new ConcurrentLinkedQueue<>();
+
+    public Session(SelectionKey key) {
+        this.key = key;
     }
 
     public boolean isLoggedIn(Message message){
@@ -47,9 +51,8 @@ public class Session {
             message.setSenderId(user.getId());
         }
 
-        ByteBuffer buffer;
         try {
-            buffer = ByteBuffer.wrap(protocol.encode(message));
+            bufferToSendQueue.add(ByteBuffer.wrap(protocol.encode(message)));
         } catch (ProtocolException e) {
             if (AppConfig.DEBUG) {
                 e.printStackTrace();
@@ -57,14 +60,8 @@ public class Session {
             return;
         }
 
-        try {
-            socket.getChannel().write(buffer);
-        } catch (IOException e) {
-            if (AppConfig.DEBUG) {
-                e.printStackTrace();
-            }
-            System.out.println(e.getMessage());
-        }
+        key.interestOps(SelectionKey.OP_WRITE);
+        key.selector().wakeup();
     }
 
     public void onMessage(Message message) {
@@ -95,7 +92,7 @@ public class Session {
 
     public void close() {
         try {
-            socket.close();
+            key.channel().close();
         } catch (IOException e) {
             if (AppConfig.DEBUG) {
                 e.printStackTrace();

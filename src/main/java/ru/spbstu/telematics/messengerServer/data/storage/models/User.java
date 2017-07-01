@@ -2,7 +2,6 @@ package ru.spbstu.telematics.messengerServer.data.storage.models;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;

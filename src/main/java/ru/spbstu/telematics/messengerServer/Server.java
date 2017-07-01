@@ -13,10 +13,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -27,14 +25,16 @@ import static ru.spbstu.telematics.messengerServer.AppConfig.DEBUG;
  */
 public class Server {
 
-    IProtocol protocol = DataManager.getInstance().getProtocol();
+    private IProtocol protocol = DataManager.getInstance().getProtocol();
 
-    static Map<SocketChannel, Session> sessionMap = new HashMap<>();
+    private static Map<SelectionKey, Session> sessionMap = new HashMap<>();
 
-    Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-    public void run() throws IOException, ProtocolException {
+    private Queue<ByteBuffer> availableBuffers = new ConcurrentLinkedQueue<>();
+    private Queue<ByteBuffer> usedBuffers = new ConcurrentLinkedQueue<>();
 
+    void run() throws IOException, ProtocolException {
         Selector selector = Selector.open();
         ServerSocketChannel socket = ServerSocketChannel.open();
         InetSocketAddress address = new InetSocketAddress(AppConfig.PORT);
@@ -66,20 +66,36 @@ public class Server {
                     client.register(selector, SelectionKey.OP_READ);
                     log("Connection Accepted: " + client.getRemoteAddress() + "\n");
 
-                    sessionMap.put(client, new Session(client.socket()));
+                    sessionMap.put(key, new Session(key));
                 } else if (key.isReadable()) {
-
-                    ByteBuffer buffer = ByteBuffer.allocate(AppConfig.BUFFER_SIZE);
+                    ByteBuffer buffer;
+                    if (availableBuffers.size() == 0) {
+                        buffer = ByteBuffer.allocate(AppConfig.BUFFER_SIZE);
+                        usedBuffers.add(buffer);
+                    } else {
+                        buffer = availableBuffers.peek();
+                        usedBuffers.add(buffer);
+                    }
 
                     SocketChannel client = (SocketChannel) key.channel();
 
                     if (client.read(buffer) == -1) {
                         log("Connection closed " + client.getRemoteAddress());
-                        sessionMap.get(client).close();
-                        sessionMap.remove(client);
+                        sessionMap.get(key).close();
+                        sessionMap.remove(key);
                     } else {
-                        executor.execute(() -> handle(client, buffer));
+                        executor.execute(() -> handle(key, buffer));
                     }
+                } else if (key.isWritable()) {
+                    Queue<ByteBuffer> bufferQueue = getSession(key).getBufferToSendQueue();
+
+                    ByteBuffer buffer;
+
+                    while ((buffer = bufferQueue.poll()) != null) {
+                        ((SocketChannel) key.channel()).write(buffer);
+                    }
+
+                    key.interestOps(SelectionKey.OP_READ);
                 }
 
                 it.remove();
@@ -87,7 +103,8 @@ public class Server {
         }
     }
 
-    private void handle(SocketChannel client, ByteBuffer buffer) {
+
+    private void handle(SelectionKey key, ByteBuffer buffer) {
         Message message;
 
         try {
@@ -97,22 +114,25 @@ public class Server {
                 System.out.println(e.getMessage());
             }
             return;
+        } finally {
+            usedBuffers.remove(buffer);
+            availableBuffers.add(buffer);
         }
 
         log("get " + message);
 
-        getSession(client).onMessage(message);
+        getSession(key).onMessage(message);
     }
 
     private void log(String str) {
         System.out.println(str);
     }
 
-    private Session getSession(SocketChannel socketChannel) {
-        return sessionMap.computeIfAbsent(socketChannel, c -> new Session(c.socket()));
+    private Session getSession(SelectionKey key) {
+        return sessionMap.computeIfAbsent(key, c -> new Session(key));
     }
 
-    public static Map<SocketChannel, Session> getSessions(){
+    public static Map<SelectionKey, Session> getSessions() {
         return sessionMap;
     }
 }
